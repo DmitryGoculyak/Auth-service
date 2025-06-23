@@ -1,7 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"Auth-service/internal/db"
+)
 
 func main() {
-	fmt.Println("Hello World")
+	db.InitDB()
 }
