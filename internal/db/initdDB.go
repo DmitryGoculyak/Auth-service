@@ -1,21 +1,29 @@
 package db
 
 import (
+	"fmt"
 	"github.com/jmoiron/sqlx"
 	"log"
+
+	_ "github.com/lib/pq"
 )
 
-var DB *sqlx.DB
-
-func InitDB() {
+func InitDB(cfg *DBConfig) (*sqlx.DB, error) {
 	var err error
-	conn := "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable"
-	DB, err = sqlx.Connect("postgres", conn)
+	var db *sqlx.DB
+
+	conn := fmt.Sprintf(
+		"postgres://%s:%s@%s:%d/%s?sslmode=%s",
+		cfg.User, cfg.Password, cfg.Host, cfg.Port, cfg.DBName, cfg.SSLMode,
+	)
+	db, err = sqlx.Connect("postgres", conn)
 	if err != nil {
 		log.Fatal(err)
 	}
-	if err = DB.Ping(); err != nil {
+
+	if err = db.Ping(); err != nil {
 		log.Fatal(err)
 	}
-	log.Println("Successfully connected!")
+	log.Println("[DATABASE] Successfully connected!")
+	return db, nil
 }
