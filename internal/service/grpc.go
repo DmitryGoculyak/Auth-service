@@ -125,7 +125,7 @@ func (s *AuthServer) Authorization(ctx context.Context, req *proto.Authorization
 		return nil, status.Error(codes.PermissionDenied, "invalid email or user not found")
 	}
 
-	if !utils.CheckPassword(req.Password, hash) {
+	if !utils.CheckPassword(hash, req.Password) {
 		log.Printf("[AUTH] Password mismatch error for userID %s: %v", userID, err)
 		return nil, status.Error(codes.PermissionDenied, "invalid password")
 	}
@@ -136,7 +136,6 @@ func (s *AuthServer) Authorization(ctx context.Context, req *proto.Authorization
 		return nil, status.Error(codes.Internal, "failed to generate token")
 	}
 
-	log.Printf("[AUTH] Authorization successful for userID %s", userID)
 	return &proto.AuthorizationResponse{
 		UserID:  userID,
 		Token:   token,
