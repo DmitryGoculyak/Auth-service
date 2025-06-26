@@ -11,8 +11,6 @@ import (
 	"fmt"
 	"github.com/go-playground/validator/v10"
 	"github.com/jmoiron/sqlx"
-	"golang.org/x/crypto/bcrypt"
-
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -127,11 +125,7 @@ func (s *AuthServer) Authorization(ctx context.Context, req *proto.Authorization
 		return nil, status.Error(codes.PermissionDenied, "invalid email or user not found")
 	}
 
-	log.Printf("[AUTH] Found userID: %s, hash: %s", userID, hash)
-	log.Printf("[AUTH] Password received: %s", req.Password)
-
-	err = bcrypt.CompareHashAndPassword([]byte(hash), []byte(req.Password))
-	if err != nil {
+	if !utils.CheckPassword(req.Password, hash) {
 		log.Printf("[AUTH] Password mismatch error for userID %s: %v", userID, err)
 		return nil, status.Error(codes.PermissionDenied, "invalid password")
 	}
@@ -143,7 +137,6 @@ func (s *AuthServer) Authorization(ctx context.Context, req *proto.Authorization
 	}
 
 	log.Printf("[AUTH] Authorization successful for userID %s", userID)
-
 	return &proto.AuthorizationResponse{
 		UserID:  userID,
 		Token:   token,
@@ -154,7 +147,6 @@ func (s *AuthServer) Authorization(ctx context.Context, req *proto.Authorization
 func (s *AuthServer) DeleteAllUsers(ctx context.Context, _ *proto.Empty) (*proto.DeleteResponse, error) {
 	_, err := s.db.Exec("DELETE FROM users;")
 	if err != nil {
-		log.Println("Error deleting users", err)
 		return nil, err
 	}
 	return &proto.DeleteResponse{Message: "All users deleted"}, nil

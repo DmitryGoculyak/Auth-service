@@ -8,7 +8,7 @@ import (
 
 func main() {
 	if err := jwt.InitSecret(); err != nil {
-		log.Fatal(err)
+		log.Fatal("", err)
 		return
 	}
 

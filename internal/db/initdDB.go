@@ -16,6 +16,7 @@ func InitDB(cfg *DBConfig) (*sqlx.DB, error) {
 		"postgres://%s:%s@%s:%d/%s?sslmode=%s",
 		cfg.User, cfg.Password, cfg.Host, cfg.Port, cfg.DBName, cfg.SSLMode,
 	)
+
 	db, err = sqlx.Connect("postgres", conn)
 	if err != nil {
 		log.Fatal(err)

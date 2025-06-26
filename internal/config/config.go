@@ -28,6 +28,7 @@ type Config struct {
 }
 
 func LoadConfig() (*Config, error) {
+
 	s.Do(func() {
 		config = &Config{}
 
