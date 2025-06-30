@@ -1,12 +1,16 @@
 package service
 
-import "go.uber.org/fx"
+import (
+	"Auth-service/internal/server"
+	"go.uber.org/fx"
+)
 
 var Module = fx.Module("service",
 	fx.Provide(
-		AuthServerConstructor,
+		AuthServiceConstructor,
+		func(s *AuthService) AuthServiceServer { return s },
 	),
 	fx.Invoke(
-		RunServer,
+		server.RunServer,
 	),
 )

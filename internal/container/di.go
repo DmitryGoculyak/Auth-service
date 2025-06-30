@@ -3,7 +3,9 @@ package container
 import (
 	"Auth-service/internal/config"
 	"Auth-service/internal/db"
+	repo "Auth-service/internal/repository/pgsql"
 	"Auth-service/internal/service"
+	"Auth-service/internal/transport/rpc/handlers"
 	"Auth-service/pkg/client/billing"
 	"Auth-service/pkg/client/currency"
 	"Auth-service/validation"
@@ -18,5 +20,7 @@ func Build() *fx.App {
 		service.Module,
 		billing.Module,
 		currency.Module,
+		repo.Module,
+		handlers.Module,
 	)
 }

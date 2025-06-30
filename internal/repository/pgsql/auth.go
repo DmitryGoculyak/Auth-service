@@ -1,0 +1,49 @@
+package pgsql
+
+import (
+	"context"
+	"github.com/jmoiron/sqlx"
+)
+
+type AuthRepo struct {
+	db *sqlx.DB
+}
+
+func AuthRepoConstructor(
+	db *sqlx.DB,
+) *AuthRepo {
+	return &AuthRepo{
+		db: db,
+	}
+}
+
+func (r *AuthRepo) CreateUser(tx *sqlx.Tx, fullName string) (string, error) {
+	var userID string
+	err := tx.Get(&userID, "INSERT INTO users(full_name) VALUES($1) RETURNING id", fullName)
+	return userID, err
+}
+func (r *AuthRepo) SaveEmail(tx *sqlx.Tx, userID, email string) error {
+	_, err := tx.Exec("INSERT INTO emails(user_id,email) VALUES($1,$2) RETURNING id", userID, email)
+	return err
+}
+
+func (r *AuthRepo) SavePassword(tx *sqlx.Tx, userID, hash string) error {
+	_, err := tx.Exec("INSERT INTO passwords(user_id,hash) VALUES($1,$2) RETURNING id", userID, hash)
+	return err
+}
+
+func (r *AuthRepo) FindUserEmail(ctx context.Context, email string) (string, string, error) {
+	var userId, hash string
+	err := r.db.QueryRowContext(ctx, `
+        SELECT u.id, p.hash FROM users u
+		JOIN emails e ON u.id = e.user_id
+		JOIN passwords p ON u.id = p.user_id
+		WHERE e.email = $1
+		`, email).Scan(&userId, &hash)
+	return userId, hash, err
+}
+
+func (r *AuthRepo) DeleteAllUsers(ctx context.Context) error {
+	_, err := r.db.ExecContext(ctx, "DELETE FROM users")
+	return err
+}
