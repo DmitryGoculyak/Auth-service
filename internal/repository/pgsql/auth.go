@@ -21,10 +21,10 @@ func AuthRepoConstructor(
 }
 
 func (r *AuthRepo) CreateUser(tx *sqlx.Tx, user *entity.User) (*entity.User, error) {
-
 	if user.ID == "" {
 		user.ID = uuid.New().String()
 	}
+
 	var createUser entity.User
 	err := tx.Get(&createUser, "INSERT INTO users (id, full_name) VALUES($1,$2) RETURNING id, full_name, created_at",
 		user.ID, user.FullName)
@@ -37,7 +37,7 @@ func (r *AuthRepo) CreateUser(tx *sqlx.Tx, user *entity.User) (*entity.User, err
 
 func (r *AuthRepo) SaveEmail(tx *sqlx.Tx, user *entity.UserEmail) (*entity.UserEmail, error) {
 	var saveEmail entity.UserEmail
-	err := tx.Get(&saveEmail, "INSERT INTO emails(user_id, email) VALUES($1, $2) RETURNING id, user_id, email",
+	err := tx.Get(&saveEmail, "INSERT INTO emails(user_id, email) VALUES($1, $2) RETURNING id, user_id, email, created_at",
 		user.UserID, user.Email)
 	if err != nil {
 		return nil, fmt.Errorf("save email error: %v", err)
