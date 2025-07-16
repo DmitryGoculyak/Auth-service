@@ -17,3 +17,7 @@ billing:
 currency:
   host: localhost
   port: 8000
+
+jwt:
+  secret_key: "JWT_key"
+  token_lifetime: 1440
