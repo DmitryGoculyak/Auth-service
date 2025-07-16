@@ -4,6 +4,7 @@ import (
 	"Auth-service/internal/db"
 	"Auth-service/pkg/client/billing"
 	"Auth-service/pkg/client/currency"
+	"Auth-service/pkg/jwt"
 	"fmt"
 	"github.com/spf13/viper"
 	"sync"
@@ -25,6 +26,7 @@ type Config struct {
 	CurrencyConfig *currency.CurrencyClientConfig
 	GrpcConfig     *GrpcServiceConfig
 	DBConfig       *db.DBConfig
+	JwtConfig      *jwt.JWTConfig
 }
 
 func LoadConfig() (*Config, error) {
@@ -43,6 +45,7 @@ func LoadConfig() (*Config, error) {
 		CurrencyConfig := viper.Sub("currency")
 		GrpcConfig := viper.Sub("service")
 		DBConfig := viper.Sub("database")
+		JwtConfig := viper.Sub("jwt")
 
 		if err = parseSubConfig(BillingConfig, &config.BillingConfig); err != nil {
 			return
@@ -54,6 +57,9 @@ func LoadConfig() (*Config, error) {
 			return
 		}
 		if err = parseSubConfig(DBConfig, &config.DBConfig); err != nil {
+			return
+		}
+		if err = parseSubConfig(JwtConfig, &config.JwtConfig); err != nil {
 			return
 		}
 	})

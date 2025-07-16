@@ -4,6 +4,7 @@ import (
 	"Auth-service/internal/db"
 	"Auth-service/pkg/client/billing"
 	"Auth-service/pkg/client/currency"
+	"Auth-service/pkg/jwt"
 	"go.uber.org/fx"
 )
 
@@ -14,5 +15,6 @@ var Module = fx.Module("config",
 		func(cfg *Config) *currency.CurrencyClientConfig { return cfg.CurrencyConfig },
 		func(cfg *Config) *GrpcServiceConfig { return cfg.GrpcConfig },
 		func(cfg *Config) *db.DBConfig { return cfg.DBConfig },
+		func(cfg *Config) *jwt.JWTConfig { return cfg.JwtConfig },
 	),
 )

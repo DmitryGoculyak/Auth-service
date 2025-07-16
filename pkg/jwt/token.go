@@ -1,40 +1,33 @@
 package jwt
 
 import (
-	"errors"
+	"fmt"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/joho/godotenv"
-	"os"
 	"time"
 )
 
 type JWTConfig struct {
-	SecretKey string
+	SigningKey    string        `mapstructure:"secret_key"`
+	TokenLifetime time.Duration `mapstructure:"token_lifetime"`
 }
 
-var secret string
-
-func InitSecret() error {
-	if err := godotenv.Load(); err != nil {
-		return err
-	}
-	secret = os.Getenv("JWT_SECRET")
-	if secret == "" {
-		return errors.New("JWT_SECRET is not set")
-	}
-	return nil
-}
-
-func GenerateJWTToken(userID string) (string, error) {
-	if secret == "" {
-		return "", errors.New("secret key is empty")
+func (cfg *JWTConfig) GenerateToken(userID string) (string, error) {
+	if cfg.SigningKey == "" {
+		return "", fmt.Errorf("JWT_SIGNING_KEY is empty")
 	}
 
+	now := time.Now()
 	claims := jwt.MapClaims{
 		"user_id": userID,
-		"exp":     time.Now().Add(24 * time.Hour).Unix(),
-		"iat":     time.Now().Unix(),
+		"exp":     now.Add(cfg.TokenLifetime).Unix(),
+		"iat":     now.Unix(),
 	}
+
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString([]byte(secret))
+	signedToken, err := token.SignedString([]byte(cfg.SigningKey))
+	if err != nil {
+		return "", fmt.Errorf("failed to signedToken: %w", err)
+	}
+
+	return signedToken, nil
 }

@@ -1,7 +1,10 @@
 package pgsql
 
 import (
+	"Auth-service/internal/entity"
 	"context"
+	"fmt"
+	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -17,19 +20,41 @@ func AuthRepoConstructor(
 	}
 }
 
-func (r *AuthRepo) CreateUser(tx *sqlx.Tx, fullName string) (string, error) {
-	var userID string
-	err := tx.Get(&userID, "INSERT INTO users(full_name) VALUES($1) RETURNING id", fullName)
-	return userID, err
-}
-func (r *AuthRepo) SaveEmail(tx *sqlx.Tx, userID, email string) error {
-	_, err := tx.Exec("INSERT INTO emails(user_id,email) VALUES($1,$2) RETURNING id", userID, email)
-	return err
+func (r *AuthRepo) CreateUser(tx *sqlx.Tx, user *entity.User) (*entity.User, error) {
+
+	if user.ID == "" {
+		user.ID = uuid.New().String()
+	}
+	var createUser entity.User
+	err := tx.Get(&createUser, "INSERT INTO users (id, full_name) VALUES($1,$2) RETURNING id, full_name, created_at",
+		user.ID, user.FullName)
+	if err != nil {
+		return nil, fmt.Errorf("create user error: %v", err)
+	}
+
+	return &createUser, nil
 }
 
-func (r *AuthRepo) SavePassword(tx *sqlx.Tx, userID, hash string) error {
-	_, err := tx.Exec("INSERT INTO passwords(user_id,hash) VALUES($1,$2) RETURNING id", userID, hash)
-	return err
+func (r *AuthRepo) SaveEmail(tx *sqlx.Tx, user *entity.UserEmail) (*entity.UserEmail, error) {
+	var saveEmail entity.UserEmail
+	err := tx.Get(&saveEmail, "INSERT INTO emails(user_id, email) VALUES($1, $2) RETURNING id, user_id, email",
+		user.UserID, user.Email)
+	if err != nil {
+		return nil, fmt.Errorf("save email error: %v", err)
+	}
+
+	return &saveEmail, nil
+}
+
+func (r *AuthRepo) SavePassword(tx *sqlx.Tx, user *entity.UserPassword) (*entity.UserPassword, error) {
+	var savePassword entity.UserPassword
+	err := tx.Get(&savePassword, "INSERT INTO passwords(user_id, hash) VALUES($1, $2) RETURNING id, user_id, hash, created_at",
+		user.UserID, user.Password)
+	if err != nil {
+		return nil, fmt.Errorf("save password error: %v", err)
+	}
+
+	return &savePassword, nil
 }
 
 func (r *AuthRepo) FindUserEmail(ctx context.Context, email string) (string, string, error) {
