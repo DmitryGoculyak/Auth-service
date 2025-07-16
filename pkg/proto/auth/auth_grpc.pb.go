@@ -21,6 +21,7 @@ const _ = grpc.SupportPackageIsVersion9
 const (
 	AuthService_Registration_FullMethodName   = "/auth.AuthService/Registration"
 	AuthService_Authorization_FullMethodName  = "/auth.AuthService/Authorization"
+	AuthService_ChangePassword_FullMethodName = "/auth.AuthService/ChangePassword"
 	AuthService_DeleteAllUsers_FullMethodName = "/auth.AuthService/DeleteAllUsers"
 )
 
@@ -30,6 +31,7 @@ const (
 type AuthServiceClient interface {
 	Registration(ctx context.Context, in *RegistrationRequest, opts ...grpc.CallOption) (*RegistrationResponse, error)
 	Authorization(ctx context.Context, in *AuthorizationRequest, opts ...grpc.CallOption) (*AuthorizationResponse, error)
+	ChangePassword(ctx context.Context, in *ChangePasswordRequest, opts ...grpc.CallOption) (*ChangePasswordResponse, error)
 	DeleteAllUsers(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*DeleteResponse, error)
 }
 
@@ -61,6 +63,16 @@ func (c *authServiceClient) Authorization(ctx context.Context, in *Authorization
 	return out, nil
 }
 
+func (c *authServiceClient) ChangePassword(ctx context.Context, in *ChangePasswordRequest, opts ...grpc.CallOption) (*ChangePasswordResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ChangePasswordResponse)
+	err := c.cc.Invoke(ctx, AuthService_ChangePassword_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *authServiceClient) DeleteAllUsers(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*DeleteResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(DeleteResponse)
@@ -77,6 +89,7 @@ func (c *authServiceClient) DeleteAllUsers(ctx context.Context, in *Empty, opts 
 type AuthServiceServer interface {
 	Registration(context.Context, *RegistrationRequest) (*RegistrationResponse, error)
 	Authorization(context.Context, *AuthorizationRequest) (*AuthorizationResponse, error)
+	ChangePassword(context.Context, *ChangePasswordRequest) (*ChangePasswordResponse, error)
 	DeleteAllUsers(context.Context, *Empty) (*DeleteResponse, error)
 	mustEmbedUnimplementedAuthServiceServer()
 }
@@ -93,6 +106,9 @@ func (UnimplementedAuthServiceServer) Registration(context.Context, *Registratio
 }
 func (UnimplementedAuthServiceServer) Authorization(context.Context, *AuthorizationRequest) (*AuthorizationResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Authorization not implemented")
+}
+func (UnimplementedAuthServiceServer) ChangePassword(context.Context, *ChangePasswordRequest) (*ChangePasswordResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ChangePassword not implemented")
 }
 func (UnimplementedAuthServiceServer) DeleteAllUsers(context.Context, *Empty) (*DeleteResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteAllUsers not implemented")
@@ -154,6 +170,24 @@ func _AuthService_Authorization_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AuthService_ChangePassword_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ChangePasswordRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServiceServer).ChangePassword(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuthService_ChangePassword_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).ChangePassword(ctx, req.(*ChangePasswordRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _AuthService_DeleteAllUsers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(Empty)
 	if err := dec(in); err != nil {
@@ -186,6 +220,10 @@ var AuthService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Authorization",
 			Handler:    _AuthService_Authorization_Handler,
+		},
+		{
+			MethodName: "ChangePassword",
+			Handler:    _AuthService_ChangePassword_Handler,
 		},
 		{
 			MethodName: "DeleteAllUsers",

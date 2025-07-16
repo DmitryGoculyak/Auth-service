@@ -10,16 +10,16 @@ import (
 	"Auth-service/pkg/utils"
 	"context"
 	"github.com/go-playground/validator/v10"
-	"log"
-
 	"github.com/jmoiron/sqlx"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"log"
 )
 
 type AuthServiceServer interface {
 	Registrations(ctx context.Context, fullName, email, password, currencyCode string) (*entity.User, error)
 	Authorizations(ctx context.Context, email, password string) (*entity.User, string, error)
+	ChangePasswords(ctx context.Context, email, oldPassword, newPassword string) error
 	DeleteUsers(ctx context.Context) error
 }
 
@@ -156,6 +156,38 @@ func (s *AuthService) Authorizations(ctx context.Context, email, password string
 	return &entity.User{
 		ID: userId,
 	}, token, nil
+}
+
+func (s *AuthService) ChangePasswords(ctx context.Context, email, oldPassword, newPassword string) error {
+	input := dto.UpdatePasswordInput{
+		Email:       email,
+		OldPassword: oldPassword,
+		NewPassword: newPassword,
+	}
+
+	if err := s.validate.Struct(input); err != nil {
+		return status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	userID, currentHash, err := s.repo.FindUserEmail(ctx, input.Email)
+	if err != nil {
+		return status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	if !utils.CheckPassword(currentHash, input.OldPassword) {
+		return status.Error(codes.FailedPrecondition, "old password is incorrect")
+	}
+
+	newHash, err := utils.CreateHash(input.NewPassword)
+	if err != nil {
+		return status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	if err = s.repo.UpdatePassword(ctx, userID, newHash); err != nil {
+		return status.Error(codes.Internal, err.Error())
+	}
+
+	return nil
 }
 
 func (s *AuthService) DeleteUsers(ctx context.Context) error {

@@ -57,6 +57,15 @@ func (r *AuthRepo) SavePassword(tx *sqlx.Tx, user *entity.UserPassword) (*entity
 	return &savePassword, nil
 }
 
+func (r *AuthRepo) UpdatePassword(ctx context.Context, userID, newPassword string) error {
+	_, err := r.db.ExecContext(ctx, "UPDATE passwords SET hash = $1, updated_at = now() WHERE user_id = $2",
+		newPassword, userID)
+	if err != nil {
+		return fmt.Errorf("update passwords error: %v", err)
+	}
+	return err
+}
+
 func (r *AuthRepo) FindUserEmail(ctx context.Context, email string) (string, string, error) {
 	var userId, hash string
 	err := r.db.QueryRowContext(ctx, `

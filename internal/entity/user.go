@@ -9,9 +9,10 @@ type User struct {
 }
 
 type UserEmail struct {
-	ID     string `db:"id" json:"ID"`
-	UserID string `db:"user_id" json:"UserID"`
-	Email  string `db:"email" json:"email"`
+	ID        string    `db:"id" json:"ID"`
+	UserID    string    `db:"user_id" json:"UserID"`
+	Email     string    `db:"email" json:"email"`
+	CreatedAt time.Time `db:"created_at" json:"createdAt"`
 }
 
 type UserPassword struct {
@@ -19,4 +20,5 @@ type UserPassword struct {
 	UserID    string    `db:"user_id" json:"UserID"`
 	Password  string    `db:"hash" json:"password"`
 	CreatedAt time.Time `db:"created_at" json:"createdAt"`
+	UpdatedAt time.Time `db:"updated_at" json:"updatedAt"`
 }

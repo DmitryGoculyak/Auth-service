@@ -46,6 +46,17 @@ func (h *AuthHandler) Authorization(ctx context.Context, req *proto.Authorizatio
 	}, nil
 }
 
+func (h *AuthHandler) ChangePassword(ctx context.Context, req *proto.ChangePasswordRequest) (*proto.ChangePasswordResponse, error) {
+	err := h.service.ChangePasswords(ctx, req.Email, req.OldPassword, req.NewPassword)
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	return &proto.ChangePasswordResponse{
+		Message: "Change password successfully!",
+	}, nil
+}
+
 func (h *AuthHandler) DeleteAllUsers(ctx context.Context, _ *proto.Empty) (*proto.DeleteResponse, error) {
 	err := h.service.DeleteUsers(ctx)
 	if err != nil {
